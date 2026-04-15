@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Neptunia Weather</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <h1>Neptunia Weather</h1>
+
+    <div th:if="${error}" class="toast toast-error" th:text="${error}"></div>
+
+    <form action="/view/weather" method="get" class="search-form">
+        <input type="text" name="city" placeholder="Enter city name..." required autofocus/>
+        <button type="submit">Search</button>
+    </form>
+
+    <div th:if="${not #lists.isEmpty(cityWidgets)}" class="featured-section">
+        <h3>Italy right now</h3>
+        <div class="city-grid">
+            <a th:each="w : ${cityWidgets}"
+               th:href="@{/view/weather(city=${w.city})}"
+               class="city-widget">
+                <span class="city-icon" th:text="${w.icon}"></span>
+                <span class="city-name" th:text="${w.city}"></span>
+                <span class="city-temp" th:text="${w.temperature} + ' °C'"></span>
+                <span class="city-desc" th:text="${w.weatherDescription}"></span>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
