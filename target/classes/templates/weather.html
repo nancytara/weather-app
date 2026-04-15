@@ -9,14 +9,11 @@
 <div class="container">
     <a href="/" class="back-link">&#8592; New search</a>
 
-    <div th:if="${error}" class="error-box">
-        <p th:text="${error}"></p>
-    </div>
-
     <div th:if="${weather}">
         <div class="current-card">
             <div class="current-header">
                 <div>
+                    <span class="today-label">Today</span>
                     <h2 th:text="${weather.current.city}">City</h2>
                     <p class="description" th:text="${weather.current.weatherDescription}">Description</p>
                 </div>
@@ -44,8 +41,16 @@
 
         <h3>7-day forecast</h3>
         <div class="forecast-slider">
-            <div th:each="day : ${weather.forecast}" class="forecast-card">
-                <span class="forecast-date" th:text="${day.date}"></span>
+            <div th:each="day, idx : ${weather.forecast}"
+                 class="forecast-card"
+                 th:attr="data-index=${idx.index}"
+                 th:data-max="${day.maxTemperature}"
+                 th:data-min="${day.minTemperature}"
+                 th:data-precip="${day.precipitation}"
+                 th:data-desc="${day.weatherDescription}"
+                 th:data-icon="${day.icon}"
+                 onclick="selectDay(this)">
+                <span class="forecast-date" th:text="${day.displayDate}"></span>
                 <span class="forecast-icon" th:text="${day.icon}"></span>
                 <span class="forecast-desc" th:text="${day.weatherDescription}"></span>
                 <div class="forecast-temps">
@@ -55,7 +60,59 @@
                 <span class="forecast-precip" th:text="${day.precipitation} + ' mm'"></span>
             </div>
         </div>
+
+        <div class="forecast-detail" id="forecastDetail" style="display:none;">
+            <div class="detail-header">
+                <span id="detailIcon"></span>
+                <div>
+                    <strong id="detailDate"></strong>
+                    <span id="detailDesc"></span>
+                </div>
+            </div>
+            <div class="metrics">
+                <div class="metric">
+                    <span class="label">Max temperature</span>
+                    <span class="value" id="detailMax"></span>
+                </div>
+                <div class="metric">
+                    <span class="label">Min temperature</span>
+                    <span class="value" id="detailMin"></span>
+                </div>
+                <div class="metric">
+                    <span class="label">Precipitation</span>
+                    <span class="value" id="detailPrecip"></span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+    let currentIndex = null;
+
+    function selectDay(card) {
+        const index = parseInt(card.getAttribute('data-index'));
+
+        if (currentIndex === index) {
+            card.classList.remove('selected');
+            document.getElementById('forecastDetail').style.display = 'none';
+            currentIndex = null;
+            return;
+        }
+
+        document.querySelectorAll('.forecast-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        currentIndex = index;
+
+        document.getElementById('detailIcon').textContent   = card.getAttribute('data-icon');
+        document.getElementById('detailDate').textContent   = card.querySelector('.forecast-date').textContent;
+        document.getElementById('detailDesc').textContent   = card.getAttribute('data-desc');
+        document.getElementById('detailMax').textContent    = card.getAttribute('data-max') + ' °C';
+        document.getElementById('detailMin').textContent    = card.getAttribute('data-min') + ' °C';
+        document.getElementById('detailPrecip').textContent = card.getAttribute('data-precip') + ' mm';
+
+        document.getElementById('forecastDetail').style.display = 'block';
+    }
+</script>
 </body>
 </html>

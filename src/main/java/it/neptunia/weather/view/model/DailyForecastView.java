@@ -6,7 +6,7 @@ import lombok.Value;
 @Value
 @Builder
 public class DailyForecastView {
-    String date;
+    String displayDate;
     double maxTemperature;
     double minTemperature;
     double precipitation;

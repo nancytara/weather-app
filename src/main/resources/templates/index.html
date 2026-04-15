@@ -11,10 +11,22 @@
 
     <div th:if="${error}" class="toast toast-error" th:text="${error}"></div>
 
-    <form action="/view/weather" method="get" class="search-form">
-        <input type="text" name="city" placeholder="Enter city name..." required autofocus/>
-        <button type="submit">Search</button>
-    </form>
+    <div class="search-wrapper">
+        <form action="/view/weather" method="get" class="search-form" autocomplete="off">
+            <input id="cityInput" type="text" name="city" placeholder="Enter city name..." required autofocus/>
+            <button type="submit">Search</button>
+        </form>
+        <div id="searchPreview" class="search-preview" style="display:none;">
+            <a id="previewLink" href="#">
+                <span id="previewIcon" class="preview-icon"></span>
+                <div class="preview-info">
+                    <span id="previewCity" class="preview-city"></span>
+                    <span id="previewDesc" class="preview-desc"></span>
+                </div>
+                <span id="previewTemp" class="preview-temp"></span>
+            </a>
+        </div>
+    </div>
 
     <div th:if="${not #lists.isEmpty(cityWidgets)}" class="featured-section">
         <h3>Italy right now</h3>
@@ -30,5 +42,59 @@
         </div>
     </div>
 </div>
+
+<script>
+    const ICONS = {
+        "Clear sky": "☀️", "Mainly clear": "🌤️", "Partly cloudy": "⛅",
+        "Overcast": "☁️", "Fog": "🌫️", "Drizzle": "🌦️",
+        "Freezing drizzle": "🌨️", "Rain": "🌧️", "Freezing rain": "🌨️",
+        "Snow": "❄️", "Snow grains": "❄️", "Rain showers": "🌧️",
+        "Snow showers": "🌨️", "Thunderstorm": "⛈️", "Thunderstorm with hail": "⛈️"
+    };
+
+    const input   = document.getElementById('cityInput');
+    const preview = document.getElementById('searchPreview');
+    let debounce  = null;
+
+    input.addEventListener('input', () => {
+        clearTimeout(debounce);
+        const city = input.value.trim();
+
+        if (city.length < 3) {
+            preview.style.display = 'none';
+            return;
+        }
+
+        debounce = setTimeout(() => fetchPreview(city), 500);
+    });
+
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Escape') preview.style.display = 'none';
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.search-wrapper')) preview.style.display = 'none';
+    });
+
+    async function fetchPreview(city) {
+        try {
+            const res = await fetch('/weather/temperature?city=' + encodeURIComponent(city));
+            if (!res.ok) { preview.style.display = 'none'; return; }
+
+            const data = await res.json();
+            const icon = ICONS[data.weatherDescription] || '🌡️';
+
+            document.getElementById('previewIcon').textContent = icon;
+            document.getElementById('previewCity').textContent = data.city;
+            document.getElementById('previewDesc').textContent = data.weatherDescription;
+            document.getElementById('previewTemp').textContent = data.temperature + ' °C';
+            document.getElementById('previewLink').href = '/view/weather?city=' + encodeURIComponent(data.city);
+
+            preview.style.display = 'block';
+        } catch {
+            preview.style.display = 'none';
+        }
+    }
+</script>
 </body>
 </html>

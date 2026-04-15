@@ -1,118 +1,106 @@
-# Neptunia Weather Service
-
-A Spring Boot REST API that retrieves current weather data for any city by name, using the free [Open-Meteo](https://open-meteo.com/) APIs — no API key required.
-
----
+# 🌦️ Weather Service (Open-Meteo API)
 
 ## Project Overview
 
-The service accepts a city name, converts it to geographic coordinates via the Open-Meteo Geocoding API, then fetches current weather from the Open-Meteo Forecast API. It returns a structured JSON response with temperature, wind speed and a human-readable weather description.
+This Weather App allows users to check the current weather and 7-day forecast for any city in the world. It uses the Open-Meteo Geocoding API to find location coordinates and then fetches weather data using the Open-Meteo Weather Forecast API. No API key is required.
+
+The app includes a web interface built with Thymeleaf and a full REST API documented with Swagger.
 
 ---
 
-## Features
+## App Features
 
-- City name → coordinates via Open-Meteo Geocoding API
-- Current temperature (°C) and wind speed (km/h)
-- Human-readable weather description mapped from WMO weather codes
-- Structured error responses for invalid cities, missing parameters and API failures
-- OpenAPI / Swagger UI available at `/swagger-ui.html`
-- CORS enabled for `GET` and `POST` requests from any origin
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Language | Java 21 |
-| Framework | Spring Boot 4.0.4 |
-| HTTP clients | Spring Cloud OpenFeign + feign-jackson |
-| API docs | SpringDoc OpenAPI 2.8.5 |
-| Build | Maven 3 |
+- Search bar to enter a city name
+- Display of temperature, wind speed, humidity, precipitation and weather description
+- Weather icons mapped from WMO weather codes
+- Live weather widgets for 5 major Italian cities on the home page
+- 7-day forecast slider — click a day to expand its details
+- Error notification if a city is not found
+- Supports multiple city searches via REST API
+- Response caching with Caffeine to reduce redundant API calls
 
 ---
 
-## Installation
+## How to Navigate & Run the Code
 
-**Prerequisites:** Java 21+, Maven 3.9+
+Clone this repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/neptunia-weather-service.git
+```
+
+Navigate to the project folder:
+
+```bash
 cd neptunia-weather-service
+```
+
+Run the application:
+
+```bash
 mvn spring-boot:run
 ```
 
-The service starts on `http://localhost:8080`.
-
----
-
-## Usage
-
-### Get current weather
+Open your browser and go to:
 
 ```
-GET /weather/temperature?city={cityName}
+http://localhost:8080
 ```
 
-**Example request:**
-```
-GET http://localhost:8080/weather/temperature?city=Tokyo
-```
+The REST API documentation is available at:
 
-**Example response:**
-```json
-{
-  "city": "Tokyo",
-  "temperature": 22.5,
-  "windspeed": 10.0,
-  "weatherDescription": "Clear sky"
-}
+```
+http://localhost:8080/swagger-ui.html
 ```
 
 ---
 
-## Error Handling
+## Project Files
 
-| Scenario | HTTP status | Response body |
-|---|---|---|
-| City not found / misspelled | `404 Not Found` | `{ "status": 404, "message": "Città non trovata: XYZ" }` |
-| Missing `city` parameter | `400 Bad Request` | `{ "status": 400, "message": "Parametro mancante: city" }` |
-| External API unreachable / timeout | `502 Bad Gateway` | `{ "status": 502, "message": "Errore nella chiamata all'API meteo" }` |
-| Unexpected server error | `500 Internal Server Error` | `{ "status": 500, "message": "Errore interno del server" }` |
+```
+src/main/java/it/neptunia/weather/
+├── controller/         WeatherController.java          REST API endpoints
+├── view/
+│   ├── controller/     WeatherViewController.java      Thymeleaf page controller
+│   └── model/          CurrentWeatherView, DailyForecastView, WeatherPageView
+├── service/            WeatherService.java             Business logic and caching
+│                       WeatherCode.java                WMO code → description mapping
+├── geocoding/          GeocodingService.java           City name → coordinates
+├── proxy/              OpenMeteoProxy.java             Feign client for weather API
+│                       GeocodingProxy.java             Feign client for geocoding API
+├── model/              Weather.java, DailyForecast.java
+├── exception/          CityNotFoundException, GlobalExceptionHandler
+└── config/             Cache, CORS, Feign, OpenAPI configuration
 
----
-
-## External APIs
-
-| API | Base URL | Purpose |
-|---|---|---|
-| Open-Meteo Geocoding | `https://geocoding-api.open-meteo.com` | Convert city name → lat/lng |
-| Open-Meteo Forecast | `https://api.open-meteo.com` | Fetch current weather by coordinates |
-
-Both APIs are free and require no authentication.
-
----
-
-## Running Tests
-
-```bash
-mvn test
+src/main/resources/
+├── templates/          index.html, weather.html        Thymeleaf templates
+├── static/css/         style.css
+├── application.yml
+└── cache.yml
 ```
 
-The test suite covers:
+---
 
-- Unit tests for WMO weather code mapping (`WeatherCodeTest`)
-- Unit tests for geocoding with mock responses (`GeocodingServiceTest`)
-- Unit tests for the weather service orchestration (`WeatherServiceTest`)
-- Controller integration tests including error scenarios (`WeatherControllerTest`)
+## What I Learned
+
+- How to chain multiple external API calls using Spring Cloud OpenFeign
+- Mapping raw API codes (WMO weather codes) to human-readable descriptions
+- Implementing response caching with Caffeine in Spring Boot
+- Separating REST and MVC view layers with dedicated ViewModels
+- Building an interactive UI with Thymeleaf, vanilla JS and CSS animations
+
+---
+
+## Challenges
+
+Chaining two asynchronous API calls (geocoding → forecast) and handling failures gracefully at each step required careful exception handling. Keeping the REST layer and the Thymeleaf view layer cleanly separated while reusing the same domain service was also an interesting architectural decision.
 
 ---
 
 ## Future Improvements
 
-- Add hourly and daily forecast endpoints
-- Cache geocoding responses to reduce redundant API calls
-- Add `humidity` and `precipitation` to the response
-- Support multiple cities in a single request
+- Add hourly forecast
+- Store recent search history
+- Improve mobile responsiveness
+- Add unit/integration tests for the view layer
 - Internationalise weather descriptions
