@@ -1,6 +1,5 @@
 package it.neptunia.weather.view.controller;
 
-import it.neptunia.weather.exception.CityNotFoundException;
 import it.neptunia.weather.model.DailyForecast;
 import it.neptunia.weather.model.Weather;
 import it.neptunia.weather.service.WeatherService;
@@ -15,7 +14,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Controller
@@ -24,6 +26,9 @@ public class WeatherViewController {
 
     private static final List<String> FEATURED_CITIES =
             List.of("Roma", "Milano", "Napoli", "Torino", "Firenze");
+
+    private static final DateTimeFormatter DISPLAY_DATE_FMT =
+            DateTimeFormatter.ofPattern("EEEE d", Locale.ENGLISH);
 
     private final WeatherService weatherService;
 
@@ -58,8 +63,8 @@ public class WeatherViewController {
 
             model.addAttribute("weather", page);
             return "weather";
-        } catch (CityNotFoundException e) {
-            redirectAttrs.addFlashAttribute("error", "City \"" + city + "\" not found.");
+        } catch (Exception e) {
+            redirectAttrs.addFlashAttribute("error", "Could not load weather for \"" + city + "\".");
             return "redirect:/";
         }
     }
@@ -77,8 +82,9 @@ public class WeatherViewController {
     }
 
     private DailyForecastView toDailyView(DailyForecast d) {
+        String displayDate = LocalDate.parse(d.getDate()).format(DISPLAY_DATE_FMT);
         return DailyForecastView.builder()
-                .date(d.getDate())
+                .displayDate(displayDate)
                 .maxTemperature(d.getMaxTemperature())
                 .minTemperature(d.getMinTemperature())
                 .precipitation(d.getPrecipitation())
