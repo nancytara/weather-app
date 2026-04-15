@@ -1,0 +1,10 @@
+cache:
+  weather:
+    ttl-hours: 1
+    max-size: 500
+  geocoding:
+    ttl-hours: 24
+    max-size: 500
+  forecast:
+    ttl-hours: 1
+    max-size: 500

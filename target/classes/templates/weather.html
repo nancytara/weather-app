@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Neptunia Weather</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <a href="/" class="back-link">&#8592; New search</a>
+
+    <div th:if="${error}" class="error-box">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div th:if="${weather}">
+        <div class="current-card">
+            <div class="current-header">
+                <div>
+                    <h2 th:text="${weather.current.city}">City</h2>
+                    <p class="description" th:text="${weather.current.weatherDescription}">Description</p>
+                </div>
+                <span class="current-icon" th:text="${weather.current.icon}"></span>
+            </div>
+            <div class="metrics">
+                <div class="metric">
+                    <span class="label">Temperature</span>
+                    <span class="value" th:text="${weather.current.temperature} + ' °C'"></span>
+                </div>
+                <div class="metric">
+                    <span class="label">Humidity</span>
+                    <span class="value" th:text="${weather.current.humidity} + ' %'"></span>
+                </div>
+                <div class="metric">
+                    <span class="label">Wind</span>
+                    <span class="value" th:text="${weather.current.windspeed} + ' km/h'"></span>
+                </div>
+                <div class="metric">
+                    <span class="label">Precipitation</span>
+                    <span class="value" th:text="${weather.current.precipitation} + ' mm'"></span>
+                </div>
+            </div>
+        </div>
+
+        <h3>7-day forecast</h3>
+        <div class="forecast-slider">
+            <div th:each="day : ${weather.forecast}" class="forecast-card">
+                <span class="forecast-date" th:text="${day.date}"></span>
+                <span class="forecast-icon" th:text="${day.icon}"></span>
+                <span class="forecast-desc" th:text="${day.weatherDescription}"></span>
+                <div class="forecast-temps">
+                    <span class="temp-max" th:text="${day.maxTemperature} + '°'"></span>
+                    <span class="temp-min" th:text="${day.minTemperature} + '°'"></span>
+                </div>
+                <span class="forecast-precip" th:text="${day.precipitation} + ' mm'"></span>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

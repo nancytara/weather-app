@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: neptunia-weather-service
+  cache:
+    type: caffeine
+  config:
+    import: "cache.yml"
